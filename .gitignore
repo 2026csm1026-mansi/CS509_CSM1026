@@ -1,0 +1,20 @@
+# Compiled C/C++ files
+*.exe
+*.o
+*.obj
+
+# Visual Studio / VS Code temporary files
+.vs/
+.vscode/
+
+# Build directories
+build/
+bin/
+obj/
+
+# Debug files
+*.pdb
+*.ilk
+
+# Windows temporary files
+Thumbs.db
