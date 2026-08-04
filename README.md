@@ -2,56 +2,36 @@
 
 ## Repository Overview
 
-This repository contains the laboratory assignments for the CS509 course.
-
-The repository is maintained for the M.Tech CSE program and contains individual
-and, where applicable, buddy assignments completed according to the CS509
-laboratory guidelines.
-
-The current repository contains Assignment 01.
-
-### Assignment 01
-
-Assignment 01 contains the following individual work:
-
-- GEMM (General Matrix-Matrix Multiplication)
-  - Simple GEMM
-  - Blocking GEMM
-- CSR (Compressed Sparse Row) graph representation and adjacency-list-to-CSR conversion
-
-The implementations are written in C++ and include dedicated driver programs
-for testing correctness and measuring algorithm execution time. 
-
+This repository contains the CS509 laboratory assignments for the M.Tech CSE
+program. The current repository contains Assignment 01 implemented individually.
 
 ## Student Details
 
-### Individual Assignment
+| Field | Details |
+|-------|---------|
+| Name  | Mansi Verma |
+| Entry Number | CSM1026 |
+| Course | CS509 |
+| Program | M.Tech CSE |
+| Mode | Individual |
+| Language | C++17 |
 
-- Name: Mansi Verma
-- Entry Number: CSM1026
-- Assignment Mode: Individual
-- Course: CS509
-- Program: M.Tech CSE
+## Environment
 
-## Language and Environment
-
-- Programming Language: C++
-- C++ Standard: C++17
-- Compiler: g++
-- Compilation Flags: `-std=c++17 -Wall -Wextra`
-- Operating System: Windows
-
+- Compiler: `g++`
+- Standard: C++17
+- Flags: `-std=c++17 -Wall -Wextra`
+- OS: Windows
 
 ## Directory Structure
 
 ```text
 CS509_CSM1026/
 ├── README.md
+├── .gitignore
+├── common_wrapper/
+│   └── wrapper.cpp
 └── assignment_01/
-    ├── driver/
-    │   ├── gemm_test.cpp
-    │   └── csr_test.cpp
-    │
     ├── src/
     │   ├── gemm_simple.cpp
     │   ├── gemm_simple.h
@@ -59,7 +39,9 @@ CS509_CSM1026/
     │   ├── gemm_blocked.h
     │   ├── csr.cpp
     │   └── csr.h
-    │
+    ├── driver/
+    │   ├── gemm_test.cpp
+    │   └── csr_test.cpp
     └── tests/
         ├── gemm_test_01.txt
         ├── gemm_test_02.txt
@@ -73,112 +55,26 @@ CS509_CSM1026/
         └── csr_test_03_expected.txt
 
 
----
 
-# Step 5 — Assignment 01 section
+## Test Cases and Results
 
-Then:
+The following tables document every test case included in Assignment 01.
 
-```markdown
-# Assignment 01 - GEMM and CSR
+### GEMM Results
 
-## Assignment Mode
-
-Individual
-
-## Objective
-
-The objective of Assignment 01 is to implement and evaluate:
-
-1. Simple GEMM
-2. Blocking GEMM
-3. Adjacency-list-to-CSR conversion
-
-The GEMM implementations must produce the same result for the same matrix
-input. The execution time of the two implementations is measured separately.
-
-The CSR implementation converts an adjacency-list representation into the
-Compressed Sparse Row (CSR) representation consisting of:
-
-- `row_ptr`
-- `col_idx`
-- `values`
+| Test File          |  Input Type / Size                       | Expected Output       | Actual Output                           | Simple Time (ms)  | Blocking Time (ms) | Block Size | Status |
+|--------------------|------------------------------------------|---------------------=-|-----------------------------------------|----------:|---------------------:|----------|--------|
+| `gemm_test_01.txt` | A: 2×3, B: 3×2, C: 2×2                   | `58 64 / 139 154`     | Simple = Blocking = `58 64 / 139 154`   | 0.0022       | 0.000633           | 8          | PASS   |
+| `gemm_test_02.txt` | A: 64×64, B: 64×64, C: 64×64             | All elements = `64`   | Simple = Blocking; all elements = `64`  | 3.51667      | 3.84423            | 8          | PASS   |
+| `gemm_test_03.txt` | A: 128×128, B: 128×128, C: 128×128       | All elements = `128`  | Simple = Blocking; all elements = `128`  | 27.7589       | 29.1609            | 8          | PASS   |
+| `gemm_test_04.txt` | A: 1000×1000, B: 1000×1000, C: 1000×1000 | All elements = `1000` | Simple = Blocking; all elements = `1000` | 15472.8          | 14779              | 8          | PASS   |
 
 
+### CSR Results
 
-## GEMM
+| Algorithm      | Test File         | Vertices | Edges | Input Type              | Expected Output                                   | Actual Output      | Time | Status |
+|----------------|-------------------|----------|------:|-------------------------|---------------------------------------------------|-------------------|------|---------|
+| CSR Conversion | `csr_test_01.txt` | 4        | 6     | Weighted adjacency list | `row_ptr`, `col_idx`, `values` match expected CSR | All three arrays match | N/A  | PASS    |
+| CSR Conversion | `csr_test_02.txt` | 5        | 5     | Weighted adjacency list | `row_ptr`, `col_idx`, `values` match expected CSR | All three arrays match | N/A  | PASS    |
+| CSR Conversion | `csr_test_03.txt` | 4        | 0     | Weighted adjacency list | Empty `col_idx` and `values`; correct `row_ptr`   | All arrays match       | N/A  | PASS     |
 
-### Objective
-
-GEMM (General Matrix-Matrix Multiplication) computes the product of two
-matrices.
-
-For:
-
-- A of size `M × K`
-- B of size `K × N`
-
-the resulting matrix C has size `M × N`.
-
-Each element is computed as:
-
-C[i][j] = Σ A[i][k] × B[k][j]
-
-for `k = 0 ... K-1`.
-
-### Simple GEMM
-
-The simple implementation uses the direct nested-loop matrix multiplication
-approach.
-
-### Blocking GEMM
-
-The blocking implementation divides the matrices into smaller blocks or tiles.
-The purpose of blocking is to improve data reuse and cache locality by
-processing smaller portions of the matrices at a time.
-
-
-
-## GEMM Input Format
-
-Each GEMM test file contains one test case.
-
-The first line contains:
-
-```text
-M K N
-
-
-
-
----
-
-## Step 8 — Timing methodology
-
-This is an important section because your professor specifically emphasized it.
-
-Add:
-
-```markdown
-## Runtime Measurement
-
-Execution time is measured using `std::chrono::steady_clock`.
-
-Only the execution of the GEMM algorithm is included in the measured region.
-
-The following operations are excluded from the measured time:
-
-- Input file reading
-- Matrix input parsing
-- Matrix preparation
-- Result printing
-- Output formatting
-- Correctness checking
-
-The timer starts immediately before the GEMM function is called and stops
-immediately after the function returns.
-
-Each GEMM implementation is executed 3 times for timing, and the average
-execution time is reported.
-
-Execution time is reported in milliseconds (ms).
