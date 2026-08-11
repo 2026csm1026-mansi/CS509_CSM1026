@@ -5,25 +5,12 @@
 #include <vector>
 #include <chrono>
 #include <limits>
-
 #include "../src/bellman_ford.h"
 #include "../src/floyd_warshall.h"
-
 using namespace std;
 
 const long long INF = numeric_limits<long long>::max() / 4;
-
-
-// ============================================================
-// Bellman-Ford input reader
-// ============================================================
-
-bool readBellmanFordInput(
-    const string& filename,
-    int& vertices,
-    int& edges,
-    vector<vector<pair<int, int>>>& adjacencyList,
-    int& source)
+bool readBellmanFordInput(const string& filename,int& vertices,int& edges,vector<vector<pair<int, int>>>& adjacencyList,int& source)
 {
     ifstream file(filename);
 
@@ -44,7 +31,6 @@ bool readBellmanFordInput(
     }
 
     adjacencyList.resize(vertices);
-
     for (int i = 0; i < vertices; i++)
     {
         int vertex;
@@ -112,12 +98,6 @@ bool readBellmanFordInput(
 
     return true;
 }
-
-
-// ============================================================
-// Floyd-Warshall input reader
-// ============================================================
-
 bool readFloydWarshallInput(
     const string& filename,
     int& vertices,
@@ -181,56 +161,25 @@ bool readFloydWarshallInput(
 
     return true;
 }
-
-
-// ============================================================
-// Run Bellman-Ford
-// ============================================================
 int runBellmanFord(const string& filename)
 {
     int vertices;
     int edges;
     int source;
-
     vector<vector<pair<int, int>>> adjacencyList;
-
-    if (!readBellmanFordInput(
-            filename,
-            vertices,
-            edges,
-            adjacencyList,
-            source))
+    if (!readBellmanFordInput(filename,vertices,edges,adjacencyList,source))
     {
         return 1;
     }
-
-    // CSR conversion is preprocessing.
-    // It is intentionally outside the timed region.
     CSRGraph graph = convertToCSR(adjacencyList);
-
-    // --------------------------------------------------------
-    // Algorithm timing starts here.
-    // --------------------------------------------------------
-
     auto start = chrono::high_resolution_clock::now();
-
-    BellmanFordResult result =
-        bellmanFord(graph, source, vertices);
-
-    auto stop = chrono::high_resolution_clock::now();
-
-    double executionTime =
-        chrono::duration<double, milli>(stop - start).count();
-
-    // --------------------------------------------------------
-    // Output summary only.
-    // --------------------------------------------------------
-
+    BellmanFordResult result =bellmanFord(graph, source, vertices);
+    auto stop =chrono::high_resolution_clock::now();
+    double executionTime= chrono::duration<double, milli>(stop - start).count();
     cout << "Algorithm: Bellman-Ford\n";
     cout << "Source: " << source << "\n";
     cout << "Vertices: " << vertices << "\n";
     cout << "Edges: " << edges << "\n";
-
     if (result.negativeCycle)
     {
         cout << "Negative cycle: true\n";
@@ -239,53 +188,27 @@ int runBellmanFord(const string& filename)
     {
         cout << "Negative cycle: none\n";
     }
-
     cout << "Execution time: "
          << executionTime
          << " ms\n";
 
     return 0;
 }
-
-// ============================================================
-// Run Floyd-Warshall
-// ============================================================
 int runFloydWarshall(const string& filename)
 {
     int vertices;
 
     vector<vector<long long>> matrix;
 
-    if (!readFloydWarshallInput(
-            filename,
-            vertices,
-            matrix))
+    if (!readFloydWarshallInput(filename,vertices,matrix))
     {
         return 1;
     }
-
-    // --------------------------------------------------------
-    // Algorithm timing starts here.
-    // Input reading is NOT included.
-    // --------------------------------------------------------
-
     auto start = chrono::high_resolution_clock::now();
-
-    FloydWarshallResult result =
-        floydWarshall(matrix);
-
+    FloydWarshallResult result =floydWarshall(matrix);
     auto stop = chrono::high_resolution_clock::now();
-
-    double executionTime =
-        chrono::duration<double, milli>(stop - start).count();
-
-    // --------------------------------------------------------
-    // Output only summary information.
-    // Do NOT print the complete matrix.
-    // --------------------------------------------------------
-
+    double executionTime =chrono::duration<double, milli>(stop - start).count();
     cout << "Algorithm: Floyd-Warshall\n";
-
     if (result.negativeCycle)
     {
         cout << "Negative cycle: true\n";
@@ -295,23 +218,11 @@ int runFloydWarshall(const string& filename)
         cout << "Negative cycle: none\n";
     }
 
-    cout << "Vertices: "
-         << vertices
-         << "\n";
+    cout << "Vertices: "<< vertices<< "\n";
 
-    cout << "Execution time: "
-         << executionTime
-         << " ms\n";
-
+    cout << "Execution time: "<< executionTime<< " ms\n";
     return 0;
 }
-
-
-
-// ============================================================
-// Main
-// ============================================================
-
 int main(int argc, char* argv[])
 {
     if (argc != 3)
@@ -319,13 +230,10 @@ int main(int argc, char* argv[])
         cerr << "Usage:\n";
         cerr << "  driver.exe bellman-ford <input-file>\n";
         cerr << "  driver.exe floyd-warshall <input-file>\n";
-
         return 1;
     }
-
     string algorithm = argv[1];
     string filename = argv[2];
-
     if (algorithm == "bellman-ford")
     {
         return runBellmanFord(filename);
@@ -336,8 +244,7 @@ int main(int argc, char* argv[])
         return runFloydWarshall(filename);
     }
 
-    cerr << "Error: unknown algorithm: "
-         << algorithm << "\n";
+    cerr << "Error: unknown algorithm: "<< algorithm << "\n";
 
     return 1;
 }

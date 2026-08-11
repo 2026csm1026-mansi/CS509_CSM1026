@@ -4,14 +4,8 @@
 #include <random>
 #include <string>
 #include <filesystem>
-
 using namespace std;
 namespace fs = std::filesystem;
-
-
-// ============================================================
-// Generate Bellman-Ford sparse graph
-// ============================================================
 
 void generateBellmanFord(
     const fs::path& filename,
@@ -21,9 +15,6 @@ void generateBellmanFord(
     mt19937 rng(1000 + vertices);
 
     uniform_int_distribution<int> vertexDist(0, vertices - 1);
-
-    // Positive weights guarantee that generated graphs
-    // cannot contain negative-weight cycles.
     uniform_int_distribution<int> weightDist(1, 20);
 
     int totalEdges = vertices * edgesPerVertex;
@@ -86,12 +77,6 @@ void generateBellmanFord(
          << totalEdges
          << " edges)\n";
 }
-
-
-// ============================================================
-// Generate Floyd-Warshall matrix
-// ============================================================
-
 void generateFloydWarshall(
     const fs::path& filename,
     int vertices)
@@ -105,21 +90,10 @@ void generateFloydWarshall(
         vertices,
         vector<long long>(vertices, -1)
     );
-
-    // Distance from a vertex to itself.
     for (int i = 0; i < vertices; i++)
     {
         matrix[i][i] = 0;
     }
-
-    /*
-        Generate edges only from smaller vertex numbers
-        to larger vertex numbers.
-
-        Therefore the generated graph is acyclic,
-        so negative weights cannot create a negative cycle.
-    */
-
     for (int i = 0; i < vertices; i++)
     {
         for (int j = i + 1; j < vertices; j++)
@@ -172,26 +146,11 @@ void generateFloydWarshall(
          << " (" << vertices
          << " vertices)\n";
 }
-
-
-// ============================================================
-// Main
-// ============================================================
-
 int main()
 {
     cout << "========================================\n";
     cout << " Assignment 2 Test Generator\n";
     cout << "========================================\n\n";
-
-
-    // --------------------------------------------------------
-    // Find repository root.
-    //
-    // Current working directory is expected to be:
-    // CS509_CSM1026
-    // --------------------------------------------------------
-
     fs::path repoRoot = fs::current_path();
 
     fs::path assignment02 =
@@ -199,9 +158,6 @@ int main()
 
     fs::path testsDirectory =
         assignment02 / "tests";
-
-
-    // Make sure tests directory exists.
     fs::create_directories(testsDirectory);
 
 
@@ -212,12 +168,6 @@ int main()
     cout << "Test directory:\n"
          << testsDirectory.string()
          << "\n\n";
-
-
-    // --------------------------------------------------------
-    // Bellman-Ford
-    // --------------------------------------------------------
-
     cout << "Generating Bellman-Ford tests...\n\n";
 
     generateBellmanFord(
@@ -249,12 +199,6 @@ int main()
         100000,
         3
     );
-
-
-    // --------------------------------------------------------
-    // Floyd-Warshall
-    // --------------------------------------------------------
-
     cout << "\nGenerating Floyd-Warshall tests...\n\n";
 
     generateFloydWarshall(

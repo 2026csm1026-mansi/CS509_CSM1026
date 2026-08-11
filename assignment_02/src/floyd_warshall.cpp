@@ -3,8 +3,7 @@
 #include <algorithm>
 #include <limits>
 
-FloydWarshallResult floydWarshall(
-    const std::vector<std::vector<long long>>& matrix)
+FloydWarshallResult floydWarshall(const std::vector<std::vector<long long>>& matrix)
 {
     const long long INF = std::numeric_limits<long long>::max() / 4;
 
@@ -34,9 +33,7 @@ FloydWarshallResult floydWarshall(
             }
         }
     }
-
     bool negativeCycle = false;
-
     for (int i = 0; i < vertices; i++)
     {
         if (distance[i][i] < 0)
@@ -45,6 +42,5 @@ FloydWarshallResult floydWarshall(
             break;
         }
     }
-
     return {distance, negativeCycle};
 }
