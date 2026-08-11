@@ -31,8 +31,6 @@ void runCommand(const std::string& command)
 
     startupInfo.cb = sizeof(startupInfo);
 
-    // CreateProcess may modify the command string,
-    // so it must not be const.
     std::string commandLine = command;
 
     BOOL success = CreateProcessA(
@@ -54,10 +52,10 @@ void runCommand(const std::string& command)
             << "Error: could not start process. Error code: "
             << GetLastError()
             << "\n";
+
         return;
     }
 
-    // Wait until the assignment program finishes.
     WaitForSingleObject(
         processInfo.hProcess,
         INFINITE
@@ -96,7 +94,11 @@ void showMenu()
     std::cout << "2. Run GEMM - all tests\n";
     std::cout << "3. Run CSR - selected test\n";
     std::cout << "4. Run CSR - all tests\n";
-    std::cout << "5. Exit\n";
+    std::cout << "5. Run Bellman-Ford - selected test\n";
+    std::cout << "6. Run Bellman-Ford - all tests\n";
+    std::cout << "7. Run Floyd-Warshall - selected test\n";
+    std::cout << "8. Run Floyd-Warshall - all tests\n";
+    std::cout << "9. Exit\n";
     std::cout << "====================================\n";
     std::cout << "Enter your choice: ";
 }
@@ -130,7 +132,7 @@ int main()
 
 
     // --------------------------------------------------
-    // Assignment paths
+    // Assignment 1 paths
     // --------------------------------------------------
 
     fs::path assignmentPath =
@@ -144,6 +146,20 @@ int main()
 
 
     // --------------------------------------------------
+    // Assignment 2 paths
+    // --------------------------------------------------
+
+    fs::path assignment02Path =
+        repositoryRoot / "assignment_02";
+
+    fs::path assignment02DriverPath =
+        assignment02Path / "driver";
+
+    fs::path assignment02TestsPath =
+        assignment02Path / "tests";
+
+
+    // --------------------------------------------------
     // Executable paths
     // --------------------------------------------------
 
@@ -152,6 +168,9 @@ int main()
 
     fs::path csrExecutable =
         driverPath / "csr_test.exe";
+
+    fs::path assignment02Executable =
+        assignment02DriverPath / "driver.exe";
 
 
     // --------------------------------------------------
@@ -203,10 +222,8 @@ int main()
                 continue;
             }
 
-
             std::string testFile;
             int blockSize;
-
 
             std::cout
                 << "Enter GEMM test file name "
@@ -214,12 +231,10 @@ int main()
 
             std::cin >> testFile;
 
-
             std::cout
                 << "Enter block size: ";
 
             std::cin >> blockSize;
-
 
             if (blockSize <= 0)
             {
@@ -229,10 +244,8 @@ int main()
                 continue;
             }
 
-
             fs::path testPath =
                 testsPath / testFile;
-
 
             if (!fileExists(testPath))
             {
@@ -244,18 +257,12 @@ int main()
                 continue;
             }
 
-
-            // --------------------------------------------------
-            // Build command
-            // --------------------------------------------------
-
             std::string command =
                 quotePath(gemmExecutable)
                 + " "
                 + quotePath(testPath)
                 + " "
                 + std::to_string(blockSize);
-
 
             runCommand(command);
         }
@@ -277,7 +284,6 @@ int main()
                 continue;
             }
 
-
             const std::string tests[] =
             {
                 "gemm_test_01.txt",
@@ -286,15 +292,12 @@ int main()
                 "gemm_test_04.txt"
             };
 
-
             int blockSize;
-
 
             std::cout
                 << "Enter block size: ";
 
             std::cin >> blockSize;
-
 
             if (blockSize <= 0)
             {
@@ -304,12 +307,10 @@ int main()
                 continue;
             }
 
-
             for (const std::string& test : tests)
             {
                 fs::path testPath =
                     testsPath / test;
-
 
                 if (!fileExists(testPath))
                 {
@@ -321,12 +322,10 @@ int main()
                     continue;
                 }
 
-
                 std::cout
                     << "\n========== "
                     << test
                     << " ==========\n";
-
 
                 std::string command =
                     quotePath(gemmExecutable)
@@ -334,7 +333,6 @@ int main()
                     + quotePath(testPath)
                     + " "
                     + std::to_string(blockSize);
-
 
                 runCommand(command);
             }
@@ -357,9 +355,7 @@ int main()
                 continue;
             }
 
-
             std::string testFile;
-
 
             std::cout
                 << "Enter CSR test file name "
@@ -367,10 +363,8 @@ int main()
 
             std::cin >> testFile;
 
-
             fs::path testPath =
                 testsPath / testFile;
-
 
             if (!fileExists(testPath))
             {
@@ -382,23 +376,12 @@ int main()
                 continue;
             }
 
-
-            // --------------------------------------------------
-            // Create expected filename
-            //
-            // csr_test_01.txt
-            //       ↓
-            // csr_test_01_expected.txt
-            // --------------------------------------------------
-
             fs::path expectedFile =
                 testPath.stem().string()
                 + "_expected.txt";
 
-
             fs::path expectedPath =
                 testsPath / expectedFile;
-
 
             if (!fileExists(expectedPath))
             {
@@ -410,14 +393,12 @@ int main()
                 continue;
             }
 
-
             std::string command =
                 quotePath(csrExecutable)
                 + " "
                 + quotePath(testPath)
                 + " "
                 + quotePath(expectedPath);
-
 
             runCommand(command);
         }
@@ -439,7 +420,6 @@ int main()
                 continue;
             }
 
-
             const std::string tests[] =
             {
                 "csr_test_01.txt",
@@ -447,12 +427,10 @@ int main()
                 "csr_test_03.txt"
             };
 
-
             for (const std::string& test : tests)
             {
                 fs::path testPath =
                     testsPath / test;
-
 
                 if (!fileExists(testPath))
                 {
@@ -464,15 +442,12 @@ int main()
                     continue;
                 }
 
-
                 fs::path expectedFile =
                     testPath.stem().string()
                     + "_expected.txt";
 
-
                 fs::path expectedPath =
                     testsPath / expectedFile;
-
 
                 if (!fileExists(expectedPath))
                 {
@@ -484,12 +459,10 @@ int main()
                     continue;
                 }
 
-
                 std::cout
                     << "\n========== "
                     << test
                     << " ==========\n";
-
 
                 std::string command =
                     quotePath(csrExecutable)
@@ -498,6 +471,106 @@ int main()
                     + " "
                     + quotePath(expectedPath);
 
+                runCommand(command);
+            }
+        }
+
+
+        // ==================================================
+        // 5. BELLMAN-FORD - SELECTED TEST
+        // ==================================================
+
+        else if (choice == 5)
+        {
+            if (!fileExists(assignment02Executable))
+            {
+                std::cout
+                    << "Error: Assignment 2 executable not found:\n"
+                    << assignment02Executable.string()
+                    << "\n";
+
+                continue;
+            }
+
+            std::string testFile;
+
+            std::cout
+                << "Enter Bellman-Ford test file name "
+                   "(example: bf_10.txt): ";
+
+            std::cin >> testFile;
+
+            fs::path testPath =
+                assignment02TestsPath / testFile;
+
+            if (!fileExists(testPath))
+            {
+                std::cout
+                    << "Error: test file not found:\n"
+                    << testPath.string()
+                    << "\n";
+
+                continue;
+            }
+
+            std::string command =
+                quotePath(assignment02Executable)
+                + " bellman-ford "
+                + quotePath(testPath);
+
+            runCommand(command);
+        }
+
+
+        // ==================================================
+        // 6. BELLMAN-FORD - ALL TESTS
+        // ==================================================
+
+        else if (choice == 6)
+        {
+            if (!fileExists(assignment02Executable))
+            {
+                std::cout
+                    << "Error: Assignment 2 executable not found:\n"
+                    << assignment02Executable.string()
+                    << "\n";
+
+                continue;
+            }
+
+            const std::string tests[] =
+            {
+                "bf_10.txt",
+                "bf_100.txt",
+                "bf_10000.txt",
+                "bf_50000.txt",
+                "bf_100000.txt"
+            };
+
+            for (const std::string& test : tests)
+            {
+                fs::path testPath =
+                    assignment02TestsPath / test;
+
+                if (!fileExists(testPath))
+                {
+                    std::cout
+                        << "\nError: test file not found:\n"
+                        << testPath.string()
+                        << "\n";
+
+                    continue;
+                }
+
+                std::cout
+                    << "\n========== "
+                    << test
+                    << " ==========\n";
+
+                std::string command =
+                    quotePath(assignment02Executable)
+                    + " bellman-ford "
+                    + quotePath(testPath);
 
                 runCommand(command);
             }
@@ -505,10 +578,111 @@ int main()
 
 
         // ==================================================
-        // 5. EXIT
+        // 7. FLOYD-WARSHALL - SELECTED TEST
         // ==================================================
 
-        else if (choice == 5)
+        else if (choice == 7)
+        {
+            if (!fileExists(assignment02Executable))
+            {
+                std::cout
+                    << "Error: Assignment 2 executable not found:\n"
+                    << assignment02Executable.string()
+                    << "\n";
+
+                continue;
+            }
+
+            std::string testFile;
+
+            std::cout
+                << "Enter Floyd-Warshall test file name "
+                   "(example: fw_10.txt): ";
+
+            std::cin >> testFile;
+
+            fs::path testPath =
+                assignment02TestsPath / testFile;
+
+            if (!fileExists(testPath))
+            {
+                std::cout
+                    << "Error: test file not found:\n"
+                    << testPath.string()
+                    << "\n";
+
+                continue;
+            }
+
+            std::string command =
+                quotePath(assignment02Executable)
+                + " floyd-warshall "
+                + quotePath(testPath);
+
+            runCommand(command);
+        }
+
+
+        // ==================================================
+        // 8. FLOYD-WARSHALL - ALL TESTS
+        // ==================================================
+
+        else if (choice == 8)
+        {
+            if (!fileExists(assignment02Executable))
+            {
+                std::cout
+                    << "Error: Assignment 2 executable not found:\n"
+                    << assignment02Executable.string()
+                    << "\n";
+
+                continue;
+            }
+
+            const std::string tests[] =
+            {
+                "fw_10.txt",
+                "fw_100.txt",
+                "fw_500.txt",
+                "fw_1000.txt",
+                "fw_2000.txt"
+            };
+
+            for (const std::string& test : tests)
+            {
+                fs::path testPath =
+                    assignment02TestsPath / test;
+
+                if (!fileExists(testPath))
+                {
+                    std::cout
+                        << "\nError: test file not found:\n"
+                        << testPath.string()
+                        << "\n";
+
+                    continue;
+                }
+
+                std::cout
+                    << "\n========== "
+                    << test
+                    << " ==========\n";
+
+                std::string command =
+                    quotePath(assignment02Executable)
+                    + " floyd-warshall "
+                    + quotePath(testPath);
+
+                runCommand(command);
+            }
+        }
+
+
+        // ==================================================
+        // 9. EXIT
+        // ==================================================
+
+        else if (choice == 9)
         {
             std::cout
                 << "Exiting wrapper.\n";
