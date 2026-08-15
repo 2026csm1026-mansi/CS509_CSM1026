@@ -7,8 +7,6 @@ MSTResult primMST(const CSRGraph& graph, int V, int startVertex)
 {
     MSTResult result;
     if (V == 0) return result;
-
-    // Min-heap of (weight, vertex, parent).
     using Node = std::tuple<long long, int, int>;
     std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
 
@@ -33,8 +31,6 @@ MSTResult primMST(const CSRGraph& graph, int V, int startVertex)
             result.totalWeight += w;
             edgesAdded++;
         }
-
-        // Relax all edges from u to vertices not yet in the tree.
         for (int idx = graph.row_ptr[u]; idx < graph.row_ptr[u + 1]; idx++)
         {
             int v = graph.col_idx[idx];
@@ -45,6 +41,5 @@ MSTResult primMST(const CSRGraph& graph, int V, int startVertex)
             }
         }
     }
-
     return result;
 }

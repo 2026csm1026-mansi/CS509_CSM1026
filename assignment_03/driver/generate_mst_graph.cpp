@@ -1,5 +1,3 @@
-
-
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -36,11 +34,8 @@ int main(int argc, char* argv[])
     std::mt19937_64 rng(seed);
     std::uniform_int_distribution<int> weightDist(1, 100);
     std::uniform_int_distribution<long long> vertexDist(0, V - 1);
-
-    // Edge set keyed as (min(a,b) * V + max(a,b)) to dedupe cheaply.
-    std::vector<std::vector<std::pair<int, int>>> adj(V); // (neighbor, weight)
+    std::vector<std::vector<std::pair<int, int>>> adj(V); 
     std::set<long long> seen;
-
     auto edgeKey = [V](long long a, long long b) {
         if (a > b) std::swap(a, b);
         return a * V + b;
@@ -56,8 +51,6 @@ int main(int argc, char* argv[])
         adj[b].push_back({static_cast<int>(a), w});
         return true;
     };
-
-    // 1) Guarantee connectivity: random permutation spanning chain.
     std::vector<long long> perm(V);
     for (long long i = 0; i < V; i++) perm[i] = i;
     std::shuffle(perm.begin(), perm.end(), rng);
@@ -65,12 +58,11 @@ int main(int argc, char* argv[])
     long long edgeCount = 0;
     for (long long i = 1; i < V; i++)
     {
-        if (addEdge(perm[i - 1], perm[i])) edgeCount++;
+                   if (addEdge(perm[i - 1], perm[i])) 
+                       edgeCount++;
     }
-
-    // 2) Add random extra edges until target E is reached (sparse graph).
     long long attempts = 0;
-    long long maxAttempts = E * 20 + 1000; // safety valve
+    long long maxAttempts = E * 20 + 1000; 
     while (edgeCount < E && attempts < maxAttempts)
     {
         long long a = vertexDist(rng);
@@ -78,8 +70,6 @@ int main(int argc, char* argv[])
         if (addEdge(a, b)) edgeCount++;
         attempts++;
     }
-
-    // Write output file in Section 5.1 format.
     std::ofstream out(outPath);
     if (!out.is_open())
     {

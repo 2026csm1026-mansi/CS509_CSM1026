@@ -1,8 +1,6 @@
 #include "kruskal.h"
 #include <algorithm>
 #include <numeric>
-
-// ---------- Disjoint Set Union (Union-Find) ----------
 namespace
 {
     class DSU
@@ -45,11 +43,6 @@ namespace
 MSTResult kruskalMST(const CSRGraph& graph, int V)
 {
     MSTResult result;
-
-    // Build a de-duplicated edge list from the CSR structure.
-    // The graph is undirected, so every edge (u, v, w) appears twice in
-    // CSR (once in u's row, once in v's row). Taking only u < v keeps
-    // each edge exactly once.
     std::vector<MSTEdge> edges;
     edges.reserve(graph.col_idx.size() / 2);
 
@@ -65,8 +58,6 @@ MSTResult kruskalMST(const CSRGraph& graph, int V)
             }
         }
     }
-
-    // Sort edges by non-decreasing weight.
     std::sort(edges.begin(), edges.end(),
               [](const MSTEdge& a, const MSTEdge& b) { return a.weight < b.weight; });
 
