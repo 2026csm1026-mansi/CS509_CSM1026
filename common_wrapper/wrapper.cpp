@@ -1,8 +1,9 @@
+#include <windows.h>
 #include <iostream>
 #include <string>
 #include <cstdlib>
 #include <filesystem>
-#include <windows.h>
+
 
 namespace fs = std::filesystem;
 
@@ -20,22 +21,70 @@ bool fileExists(const fs::path& path)
 // --------------------------------------------------
 // Run an external command
 // --------------------------------------------------
-
 void runCommand(const std::string& command)
 {
     std::cout << "\nRunning:\n";
     std::cout << command << "\n\n";
+
+    // --------------------------------------------------
+    // Extract executable path from:
+    // "executable.exe" "input.txt" arguments
+    // --------------------------------------------------
+
+    std::string executable;
+    std::string arguments;
+
+    if (!command.empty() && command[0] == '"')
+    {
+        size_t endQuote = command.find('"', 1);
+
+        if (endQuote == std::string::npos)
+        {
+            std::cout << "Error: invalid command format.\n";
+            return;
+        }
+
+        executable =
+            command.substr(1, endQuote - 1);
+
+        arguments =
+            command.substr(endQuote + 1);
+    }
+    else
+    {
+        size_t space = command.find(' ');
+
+        if (space == std::string::npos)
+        {
+            executable = command;
+            arguments = "";
+        }
+        else
+        {
+            executable =
+                command.substr(0, space);
+
+            arguments =
+                command.substr(space + 1);
+        }
+    }
+
+    // --------------------------------------------------
+    // CreateProcess
+    // --------------------------------------------------
 
     STARTUPINFOA startupInfo{};
     PROCESS_INFORMATION processInfo{};
 
     startupInfo.cb = sizeof(startupInfo);
 
+    // CreateProcess may modify the command line,
+    // so make a writable copy.
     std::string commandLine = command;
 
     BOOL success = CreateProcessA(
-        nullptr,
-        commandLine.data(),
+        executable.c_str(),       // exact executable path
+        commandLine.data(),       // arguments
         nullptr,
         nullptr,
         FALSE,
@@ -56,6 +105,7 @@ void runCommand(const std::string& command)
         return;
     }
 
+    // Wait until algorithm finishes
     WaitForSingleObject(
         processInfo.hProcess,
         INFINITE
@@ -78,7 +128,8 @@ void runCommand(const std::string& command)
             << exitCode
             << ".\n";
     }
-}
+    std::cout << command << "\n\n";
+}  
 
 
 // --------------------------------------------------
@@ -98,7 +149,9 @@ void showMenu()
     std::cout << "6. Run Bellman-Ford - all tests\n";
     std::cout << "7. Run Floyd-Warshall - selected test\n";
     std::cout << "8. Run Floyd-Warshall - all tests\n";
-    std::cout << "9. Exit\n";
+    std::cout << "9. Run MST (Kruskal + Prim) - selected test\n";
+    std::cout << "10. Run MST (Kruskal + Prim) - all tests\n";
+    std::cout << "11. Exit\n";
     std::cout << "====================================\n";
     std::cout << "Enter your choice: ";
 }
@@ -107,7 +160,6 @@ void showMenu()
 // --------------------------------------------------
 // Put quotes around a path
 // --------------------------------------------------
-
 std::string quotePath(const fs::path& path)
 {
     return "\"" + path.string() + "\"";
@@ -160,6 +212,20 @@ int main()
 
 
     // --------------------------------------------------
+    // Assignment 3 paths (MST - Kruskal + Prim)
+    // --------------------------------------------------
+
+    fs::path assignment03Path =
+        repositoryRoot / "assignment_03";
+
+    fs::path assignment03DriverPath =
+        assignment03Path / "driver";
+
+    fs::path assignment03TestsPath =
+        assignment03Path / "tests";
+
+
+    // --------------------------------------------------
     // Executable paths
     // --------------------------------------------------
 
@@ -171,6 +237,9 @@ int main()
 
     fs::path assignment02Executable =
         assignment02DriverPath / "driver.exe";
+
+    fs::path mstExecutable =
+        assignment03DriverPath / "driver_mst.exe";
 
 
     // --------------------------------------------------
@@ -679,10 +748,111 @@ int main()
 
 
         // ==================================================
-        // 9. EXIT
+        // 9. MST (KRUSKAL + PRIM) - SELECTED TEST
         // ==================================================
 
         else if (choice == 9)
+        {
+            if (!fileExists(mstExecutable))
+            {
+                std::cout
+                    << "Error: MST executable not found:\n"
+                    << mstExecutable.string()
+                    << "\n";
+
+                continue;
+            }
+
+            std::string testFile;
+
+            std::cout
+                << "Enter MST test file name "
+                   "(example: mst_10.txt): ";
+
+            std::cin >> testFile;
+
+            fs::path testPath =
+                assignment03TestsPath / testFile;
+
+            if (!fileExists(testPath))
+            {
+                std::cout
+                    << "Error: test file not found:\n"
+                    << testPath.string()
+                    << "\n";
+
+                continue;
+            }
+
+            std::string command =
+                quotePath(mstExecutable)
+                + " "
+                + quotePath(testPath);
+
+            runCommand(command);
+        }
+
+
+        // ==================================================
+        // 10. MST (KRUSKAL + PRIM) - ALL TESTS
+        // ==================================================
+
+        else if (choice == 10)
+        {
+            if (!fileExists(mstExecutable))
+            {
+                std::cout
+                    << "Error: MST executable not found:\n"
+                    << mstExecutable.string()
+                    << "\n";
+
+                continue;
+            }
+
+            const std::string tests[] =
+            {
+                "mst_10.txt",
+                "mst_100.txt",
+                "mst_10000.txt",
+                "mst_50000.txt",
+                "mst_100000.txt"
+            };
+
+            for (const std::string& test : tests)
+            {
+                fs::path testPath =
+                    assignment03TestsPath / test;
+
+                if (!fileExists(testPath))
+                {
+                    std::cout
+                        << "\nError: test file not found:\n"
+                        << testPath.string()
+                        << "\n";
+
+                    continue;
+                }
+
+                std::cout
+                    << "\n========== "
+                    << test
+                    << " ==========\n";
+
+                std::string command =
+                    quotePath(mstExecutable)
+                    + " "
+                    + quotePath(testPath);
+
+                runCommand(command);
+            }
+        }
+
+
+        // ==================================================
+        // 11. EXIT
+        // ==================================================
+
+        else if (choice == 11)
         {
             std::cout
                 << "Exiting wrapper.\n";
