@@ -1,41 +1,67 @@
+#include <windows.h>
 #include <iostream>
 #include <string>
 #include <cstdlib>
 #include <filesystem>
-#include <windows.h>
-
 namespace fs = std::filesystem;
-
-
-// --------------------------------------------------
-// Check whether a file exists
-// --------------------------------------------------
 
 bool fileExists(const fs::path& path)
 {
     return fs::exists(path);
 }
 
-
-// --------------------------------------------------
-// Run an external command
-// --------------------------------------------------
-
 void runCommand(const std::string& command)
 {
     std::cout << "\nRunning:\n";
     std::cout << command << "\n\n";
+    std::string executable;
+    std::string arguments;
+
+    if (!command.empty() && command[0] == '"')
+    {
+        size_t endQuote = command.find('"', 1);
+
+        if (endQuote == std::string::npos)
+        {
+            std::cout << "Error: invalid command format.\n";
+            return;
+        }
+
+        executable =
+            command.substr(1, endQuote - 1);
+
+        arguments =
+            command.substr(endQuote + 1);
+    }
+    else
+    {
+        size_t space = command.find(' ');
+
+        if (space == std::string::npos)
+        {
+            executable = command;
+            arguments = "";
+        }
+        else
+        {
+            executable =
+                command.substr(0, space);
+
+            arguments =
+                command.substr(space + 1);
+        }
+    }
+
 
     STARTUPINFOA startupInfo{};
     PROCESS_INFORMATION processInfo{};
 
     startupInfo.cb = sizeof(startupInfo);
-
     std::string commandLine = command;
 
     BOOL success = CreateProcessA(
-        nullptr,
-        commandLine.data(),
+        executable.c_str(),     
+        commandLine.data(),     
         nullptr,
         nullptr,
         FALSE,
@@ -56,6 +82,7 @@ void runCommand(const std::string& command)
         return;
     }
 
+    // Wait until algorithm finishes
     WaitForSingleObject(
         processInfo.hProcess,
         INFINITE
@@ -78,12 +105,9 @@ void runCommand(const std::string& command)
             << exitCode
             << ".\n";
     }
-}
+    std::cout << command << "\n\n";
+}  
 
-
-// --------------------------------------------------
-// Display menu
-// --------------------------------------------------
 
 void showMenu()
 {
@@ -98,15 +122,13 @@ void showMenu()
     std::cout << "6. Run Bellman-Ford - all tests\n";
     std::cout << "7. Run Floyd-Warshall - selected test\n";
     std::cout << "8. Run Floyd-Warshall - all tests\n";
-    std::cout << "9. Exit\n";
+    std::cout << "9. Run MST (Kruskal + Prim) - selected test\n";
+    std::cout << "10. Run MST (Kruskal + Prim) - all tests\n";
+    std::cout << "11. Exit\n";
     std::cout << "====================================\n";
     std::cout << "Enter your choice: ";
 }
 
-
-// --------------------------------------------------
-// Put quotes around a path
-// --------------------------------------------------
 
 std::string quotePath(const fs::path& path)
 {
@@ -114,16 +136,8 @@ std::string quotePath(const fs::path& path)
 }
 
 
-// --------------------------------------------------
-// Main
-// --------------------------------------------------
-
 int main()
 {
-    // --------------------------------------------------
-    // Find repository root
-    // --------------------------------------------------
-
     fs::path wrapperDirectory =
         fs::current_path();
 
@@ -131,11 +145,7 @@ int main()
         wrapperDirectory.parent_path();
 
 
-    // --------------------------------------------------
-    // Assignment 1 paths
-    // --------------------------------------------------
-
-    fs::path assignmentPath =
+ fs::path assignmentPath =
         repositoryRoot / "assignment_01";
 
     fs::path driverPath =
@@ -143,12 +153,6 @@ int main()
 
     fs::path testsPath =
         assignmentPath / "tests";
-
-
-    // --------------------------------------------------
-    // Assignment 2 paths
-    // --------------------------------------------------
-
     fs::path assignment02Path =
         repositoryRoot / "assignment_02";
 
@@ -157,13 +161,15 @@ int main()
 
     fs::path assignment02TestsPath =
         assignment02Path / "tests";
+   fs::path assignment03Path =
+        repositoryRoot / "assignment_03";
 
+    fs::path assignment03DriverPath =
+        assignment03Path / "driver";
 
-    // --------------------------------------------------
-    // Executable paths
-    // --------------------------------------------------
-
-    fs::path gemmExecutable =
+    fs::path assignment03TestsPath =
+        assignment03Path / "tests";
+ fs::path gemmExecutable =
         driverPath / "gemm_test.exe";
 
     fs::path csrExecutable =
@@ -172,12 +178,10 @@ int main()
     fs::path assignment02Executable =
         assignment02DriverPath / "driver.exe";
 
+    fs::path mstExecutable =
+        assignment03DriverPath / "driver_mst.exe";
 
-    // --------------------------------------------------
-    // Main menu loop
-    // --------------------------------------------------
-
-    while (true)
+   while (true)
     {
         showMenu();
 
@@ -204,13 +208,7 @@ int main()
 
             continue;
         }
-
-
-        // ==================================================
-        // 1. GEMM - SELECTED TEST
-        // ==================================================
-
-        if (choice == 1)
+       if (choice == 1)
         {
             if (!fileExists(gemmExecutable))
             {
@@ -266,13 +264,7 @@ int main()
 
             runCommand(command);
         }
-
-
-        // ==================================================
-        // 2. GEMM - ALL TESTS
-        // ==================================================
-
-        else if (choice == 2)
+       else if (choice == 2)
         {
             if (!fileExists(gemmExecutable))
             {
@@ -338,11 +330,6 @@ int main()
             }
         }
 
-
-        // ==================================================
-        // 3. CSR - SELECTED TEST
-        // ==================================================
-
         else if (choice == 3)
         {
             if (!fileExists(csrExecutable))
@@ -402,13 +389,7 @@ int main()
 
             runCommand(command);
         }
-
-
-        // ==================================================
-        // 4. CSR - ALL TESTS
-        // ==================================================
-
-        else if (choice == 4)
+     else if (choice == 4)
         {
             if (!fileExists(csrExecutable))
             {
@@ -474,13 +455,7 @@ int main()
                 runCommand(command);
             }
         }
-
-
-        // ==================================================
-        // 5. BELLMAN-FORD - SELECTED TEST
-        // ==================================================
-
-        else if (choice == 5)
+  else if (choice == 5)
         {
             if (!fileExists(assignment02Executable))
             {
@@ -520,13 +495,7 @@ int main()
 
             runCommand(command);
         }
-
-
-        // ==================================================
-        // 6. BELLMAN-FORD - ALL TESTS
-        // ==================================================
-
-        else if (choice == 6)
+ else if (choice == 6)
         {
             if (!fileExists(assignment02Executable))
             {
@@ -575,13 +544,7 @@ int main()
                 runCommand(command);
             }
         }
-
-
-        // ==================================================
-        // 7. FLOYD-WARSHALL - SELECTED TEST
-        // ==================================================
-
-        else if (choice == 7)
+    else if (choice == 7)
         {
             if (!fileExists(assignment02Executable))
             {
@@ -621,13 +584,7 @@ int main()
 
             runCommand(command);
         }
-
-
-        // ==================================================
-        // 8. FLOYD-WARSHALL - ALL TESTS
-        // ==================================================
-
-        else if (choice == 8)
+      else if (choice == 8)
         {
             if (!fileExists(assignment02Executable))
             {
@@ -675,26 +632,103 @@ int main()
 
                 runCommand(command);
             }
-        }
-
-
-        // ==================================================
-        // 9. EXIT
-        // ==================================================
-
+}
         else if (choice == 9)
+{
+            if (!fileExists(mstExecutable))
+            {
+                std::cout
+                    << "Error: MST executable not found:\n"
+                    << mstExecutable.string()
+                    << "\n";
+
+                continue;
+            }
+
+            std::string testFile;
+
+            std::cout
+                << "Enter MST test file name "
+                   "(example: mst_10.txt): ";
+
+            std::cin >> testFile;
+
+            fs::path testPath =
+                assignment03TestsPath / testFile;
+
+            if (!fileExists(testPath))
+            {
+                std::cout
+                    << "Error: test file not found:\n"
+                    << testPath.string()
+                    << "\n";
+
+                continue;
+            }
+
+            std::string command =
+                quotePath(mstExecutable)
+                + " "
+                + quotePath(testPath);
+
+            runCommand(command);
+        }
+        else if (choice == 10)
+        {
+            if (!fileExists(mstExecutable))
+            {
+                std::cout
+                    << "Error: MST executable not found:\n"
+                    << mstExecutable.string()
+                    << "\n";
+
+                continue;
+            }
+
+            const std::string tests[] =
+            {
+                "mst_10.txt",
+                "mst_100.txt",
+                "mst_10000.txt",
+                "mst_50000.txt",
+                "mst_100000.txt"
+            };
+
+            for (const std::string& test : tests)
+            {
+                fs::path testPath =
+                    assignment03TestsPath / test;
+
+                if (!fileExists(testPath))
+                {
+                    std::cout
+                        << "\nError: test file not found:\n"
+                        << testPath.string()
+                        << "\n";
+
+                    continue;
+                }
+
+                std::cout
+                    << "\n========== "
+                    << test
+                    << " ==========\n";
+
+                std::string command =
+                    quotePath(mstExecutable)
+                    + " "
+                    + quotePath(testPath);
+
+                runCommand(command);
+            }
+        }
+        else if (choice == 11)
         {
             std::cout
                 << "Exiting wrapper.\n";
 
             break;
         }
-
-
-        // ==================================================
-        // INVALID MENU OPTION
-        // ==================================================
-
         else
         {
             std::cout
